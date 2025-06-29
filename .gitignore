@@ -1,0 +1,39 @@
+# Models, checkpoints
+models/
+*.h5
+*.ckpt
+*.keras
+
+# Data, audio, csv
+dataset/
+data/
+*.wav
+*.mp3
+*.csv
+
+# Cache, logs, backups
+__pycache__/
+*.pyc
+*.pyo
+*.log
+
+# Virtual env
+venv/
+.env/
+.env
+
+# IDE/OS files
+.vscode/
+.idea/
+.DS_Store
+
+# Temp
+output/
+*.out
+
+# Tokens
+secrets.json
+token.txt
+
+ffmpeg/
+models/
