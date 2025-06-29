@@ -74,7 +74,7 @@ python scripts/dataset_download.py \
 | Model       | Architecture | EER   | File ID (Google Drive)            |
 | ----------- | ------------ | ----- | --------------------------------- |
 | ResNet-18   | ResNet-18    | 5.6%  | 1ZFC-GnW6Z-zzZUh-hZoiEyIOw79xXojt |
-| MobileNetV2 | MobileNetV2  | \~10% | [your\_file\_id\_here]            |
+| ResNet-34   | ResNet-34    | %     |                                   |
 
 ```sh
 python scripts/model_download.py --file_id 1ZFC-GnW6Z-zzZUh-hZoiEyIOw79xXojt --output models/pretrained_resnet18.keras
