@@ -1,15 +1,11 @@
 # Models, checkpoints
-models/
 *.h5
 *.ckpt
 *.keras
 
 # Data, audio, csv
-dataset/
-data/
 *.wav
 *.mp3
-*.csv
 
 # Cache, logs, backups
 __pycache__/
