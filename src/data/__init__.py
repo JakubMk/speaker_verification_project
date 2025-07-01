@@ -11,5 +11,7 @@ from .download_vc_dataset import (
 
 from .train_dataset import (
     create_training_dataset,
-    test_dataset
+    test_dataset,
+    delta,
+    wav_to_spectrogram
 )

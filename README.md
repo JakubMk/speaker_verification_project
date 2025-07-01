@@ -33,8 +33,25 @@ The goal of this project was to **reproduce and improve upon state-of-the-art sp
 - **Problem-solving:**  
   Identified and resolved bottlenecks in data, model, and training loop. Adapted SOTA techniques and critically assessed their impact on real data.
 
-**Final result:**  
-Achieved **EER = 5.5%** on VoxCeleb1-H test set with ResNet18 and custom AdaCosMargin loss.
+## Final results
+
+#### **Model Performance – Equal Error Rate (EER)**
+
+| Model name                         | Test Set      | EER (%)   | Threshold |
+|------------------------------------|---------------|-----------|-----------|
+| verification_model_resnet34_512dim | VoxCeleb1-E   | **4.93**  | 0.2595    |
+| verification_model_resnet34_512dim | VoxCeleb1-H   | 8.12      | 0.3082    |
+| verification_model_resnet18_512dim | VoxCeleb1-E   | **5.50**  | 0.2586    |
+| verification_model_resnet18_512dim | VoxCeleb1-H   | 8.65      | 0.3050    |
+ 
+#### EER Curve Plots
+
+- **ResNet-18**
+  - [VoxCeleb1-E](figures/18eer_voxceleb1E.png)
+  - [VoxCeleb1-H](figures/18eer_voxceleb1H.png)
+- **ResNet-34**
+  - [VoxCeleb1-E](figures/34eer_voxceleb1E.png)
+  - [VoxCeleb1-H](figures/34eer_voxceleb1H.png)
 
 ## Quickstart
 
@@ -71,10 +88,10 @@ python scripts/dataset_download.py \
 
 ### 4. **Download a pretrained model**
 
-| Model       | Architecture | EER   | File ID (Google Drive)            |
-| ----------- | ------------ | ----- | --------------------------------- |
-| ResNet-18   | ResNet-18    | 5.6%  | 1ZFC-GnW6Z-zzZUh-hZoiEyIOw79xXojt |
-| ResNet-34   | ResNet-34    | %     |                                   |
+| Model                                | Base Architecture | File ID (Google Drive)            |
+| ------------------------------------ | ----------------- | --------------------------------- |
+| verification_model_resnet18_512dim   | ResNet-18         | 18dfDMvbuVP4P_Zf5FI85VSDvmReMmOTk |
+| verification_model_resnet34_512dim   | ResNet-34         | 1chr196OisTxabFO5O3b11GuVf_01flFs |
 
 ```sh
 python scripts/model_download.py --file_id 1ZFC-GnW6Z-zzZUh-hZoiEyIOw79xXojt --output models/pretrained_resnet18.keras
@@ -99,6 +116,21 @@ python scripts/evaluate.py \
     --output csv/evaluation_output.csv --plot
 ```
 
+### 7. **Demo for two audio files**
+
+```sh
+python scripts/verify_speaker_cli.py \
+    --model models/your_model.keras \
+    --rec1 path/to/first_audio.wav \
+    --rec2 path/to/second_audio.wav \
+    --margin 0.30
+```
+
+- `--model` — path to trained Keras model (.keras)
+- `--rec1` — first audio file (wav/mp3/m4a...)
+- `--rec2` — second audio file (wav/mp3/m4a...)
+- `--margin` — (optional) cosine similarity threshold (default: 0.3050)
+
 ## Acknowledgements
 
 - The ResNet18 architecture and weights used in this project are based on the [qubvel/classification_models](https://github.com/qubvel/classification_models) repository.
@@ -122,3 +154,12 @@ python scripts/evaluate.py \
 ## Contact
 
 [LinkedIn](https://www.linkedin.com/in/jakub-muzyk-4906a6111/)
+
+## Hardware
+
+The project was developed and trained on a local machine with the following specifications:
+
+- **CPU**: Intel Core i7-4790 (4 cores, 8 threads, 3.6–4.0 GHz)  
+- **RAM**: 15 GB  
+- **GPU**: NVIDIA GeForce RTX 3060 Ti (8 GB VRAM, CUDA 12.8)
+- **OS**: Ubuntu 22.04

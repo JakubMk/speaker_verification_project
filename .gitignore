@@ -6,6 +6,7 @@
 # Data, audio, csv
 *.wav
 *.mp3
+*.m4a
 
 # Cache, logs, backups
 __pycache__/
@@ -25,10 +26,11 @@ venv/
 
 # Temp
 output/
+drafts/
+ffmpeg/
+dataset/
 *.out
 
 # Tokens
 secrets.json
 token.txt
-
-ffmpeg/

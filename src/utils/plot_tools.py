@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import pandas as pd
 
-def plot_eer_curve(eer_df: pd.DataFrame) -> None:
+def plot_eer_curve(eer_df: pd.DataFrame, testset_name: str = None, model_name: str = None) -> None:
     """
     Plots the Equal Error Rate (EER) curve given a DataFrame with FAR, FRR, and threshold columns.
 
@@ -18,11 +18,11 @@ def plot_eer_curve(eer_df: pd.DataFrame) -> None:
     plt.figure(figsize=(7, 5))
     plt.plot(eer_df["margin"], eer_df["FAR"], label="FAR", lw=2)
     plt.plot(eer_df["margin"], eer_df["FRR"], label="FRR", lw=2)
-    plt.axvline(eer_row["margin"], color='gray', linestyle='--', label=f"EER: {eer_row['FAR']:.3f}")
+    plt.axvline(eer_row["margin"], color='gray', linestyle='--', label=f"EER: {eer_row['FAR'] * 100:.2f}%")
 
     plt.xlabel("Threshold (margin)")
-    plt.ylabel("Error Rate")
-    plt.title("Equal Error Rate (EER) Curve")
+    plt.ylabel("Rate")
+    plt.title(f"EER Curve – {testset_name}, {model_name}")
     plt.legend()
     plt.grid(True, linestyle=':')
     plt.tight_layout()

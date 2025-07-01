@@ -17,3 +17,7 @@ from .contrastive_helpers import (
 from .plot_tools import (
     plot_eer_curve,
     )
+
+from .demo_utils import (
+    verify_speaker,
+    )
