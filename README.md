@@ -116,7 +116,7 @@ python scripts/evaluate.py \
     --output csv/evaluation_output.csv --plot
 ```
 
-### 7. **Model demo for two audio files**
+### 7. **Model demo for comparing two audio files**
 
 ```sh
 python scripts/verify_speaker_cli.py \
