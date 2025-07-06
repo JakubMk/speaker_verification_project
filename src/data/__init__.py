@@ -15,3 +15,7 @@ from .train_dataset import (
     delta,
     wav_to_spectrogram
 )
+
+from .contrastive_dataset import (
+    sample_diff_pos_utts
+)

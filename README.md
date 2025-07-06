@@ -39,8 +39,8 @@ The goal of this project was to **reproduce and improve upon state-of-the-art sp
 
 | Model name                         | Test Set      | EER (%)   | Threshold |
 |------------------------------------|---------------|-----------|-----------|
-| verification_model_resnet34_512dim | VoxCeleb1-E   | **4.93**  | 0.2595    |
-| verification_model_resnet34_512dim | VoxCeleb1-H   | 8.12      | 0.3082    |
+| verification_model_resnet34_512dim | VoxCeleb1-E   | **4.86**  | 0.2595    |
+| verification_model_resnet34_512dim | VoxCeleb1-H   | 8.06      | 0.3082    |
 | verification_model_resnet18_512dim | VoxCeleb1-E   | **5.50**  | 0.2586    |
 | verification_model_resnet18_512dim | VoxCeleb1-H   | 8.65      | 0.3050    |
  
@@ -91,7 +91,7 @@ python scripts/dataset_download.py \
 | Model                                | Base Architecture | File ID (Google Drive)            |
 | ------------------------------------ | ----------------- | --------------------------------- |
 | verification_model_resnet18_512dim   | ResNet-18         | 18dfDMvbuVP4P_Zf5FI85VSDvmReMmOTk |
-| verification_model_resnet34_512dim   | ResNet-34         | 1chr196OisTxabFO5O3b11GuVf_01flFs |
+| verification_model_resnet34_512dim   | ResNet-34         | 1fMk27d0ULfB1DLyNuNI9PnVd-2PlCuVz |
 
 ```sh
 python scripts/model_download.py --file_id 1ZFC-GnW6Z-zzZUh-hZoiEyIOw79xXojt --output models/pretrained_resnet18.keras

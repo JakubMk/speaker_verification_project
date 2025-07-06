@@ -33,7 +33,6 @@ def validate_on_testset(model, test_df: pd.DataFrame, batch_size: int = 16):
         return np.dot(emb1, emb2)
 
     # Apply the cosine similarity function to each row in the test DataFrame
-    tqdm.pandas(desc="Calculating cosine similarities")
     test_df['cosine_similarity'] = test_df.progress_apply(get_cosine_similarity, axis=1)
 
     margins = np.linspace(-0.99, 0.99, 2000)

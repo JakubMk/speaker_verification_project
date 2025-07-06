@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 from pathlib import Path
 import os
+from typing import Tuple, Optional
 
 def delta(x):
     """Computes first-order difference along time axis."""
@@ -42,7 +43,7 @@ def wav_to_spectrogram(
     example = tf.io.read_file(file_path)
     audio, _ = tf.audio.decode_wav(
         example,
-        desired_channels=-1,
+        desired_channels=1,
         desired_samples=-1,
     )
     audio = tf.squeeze(audio, axis=-1)
@@ -77,19 +78,23 @@ def configure_for_performance(ds, batch_size=16, autotune=None):
 def create_training_dataset(
     dev1_df: pd.DataFrame,
     dev2_df: pd.DataFrame,
-    batch_size: int = 16
-):
+    batch_size: int = 16,
+    autotune: int = tf.data.AUTOTUNE
+) -> Tuple[np.ndarray, tf.data.Dataset, Optional[tf.data.Dataset]]:
     """
+    Creates TensorFlow training/validation datasets from DataFrames.
     Creates TensorFlow training/validation datasets from DataFrames.
     
     Args:
         dev1_df, dev2_df: Pandas DataFrames with at least `id` and `file_path` columns.
         batch_size: Batch size for tf.data.Dataset
+        eer_val: If False, creates a validation set with the longest sample per class.
+        autotune: Autotune setting for parallel processing in tf.data.Dataset
 
     Returns:
         classes: np.ndarray of class labels
         train_ds: tf.data.Dataset for training
-        val_ds: tf.data.Dataset for validation
+        val_ds: tf.data.Dataset for validation (if eer_val is False)
     """
     df = pd.concat([dev1_df, dev2_df], ignore_index=True)
     classes = np.unique(df.id)
@@ -100,26 +105,30 @@ def create_training_dataset(
         spectrogram = wav_to_spectrogram(file_path)
         return spectrogram, label
 
-    # Create validation set: 1 longest sample per class
-    val_df = df.sort_values('duration_sec', ascending=False, ignore_index=True).drop_duplicates('id', ignore_index=True)
-    train_df = df[~df.file_path.isin(val_df.file_path)]
+    if not eer_val:
+        val_df = df.sort_values('duration_sec', ascending=False, ignore_index=True).drop_duplicates('id', ignore_index=True)
+        train_df = df[~df.file_path.isin(val_df.file_path)]
+        validation_file_paths = val_df.file_path.values
+        validation_ds = tf.data.Dataset.from_tensor_slices(validation_file_paths)
+        validation_ds = validation_ds.shuffle(len(validation_file_paths), reshuffle_each_iteration=True)
+        validation_ds = validation_ds.map(process_path, num_parallel_calls=autotune)
+        validation_ds = configure_for_performance(validation_ds, batch_size, autotune=autotune)
 
-    train_ds = tf.data.Dataset.from_tensor_slices(train_df.file_path.astype(str).values)
-    val_ds = tf.data.Dataset.from_tensor_slices(val_df.file_path.astype(str).values)
+        train_file_paths = train_df.file_path.values
+        train_ds = tf.data.Dataset.from_tensor_slices(train_file_paths)
+        train_ds = train_ds.shuffle(len(train_file_paths), reshuffle_each_iteration=True)
+        train_ds = train_ds.map(process_path, num_parallel_calls=autotune)
+        train_ds = configure_for_performance(train_ds, batch_size, autotune=autotune)
 
-    train_ds = train_ds.shuffle(len(train_df), reshuffle_each_iteration=True)
-    val_ds = val_ds.shuffle(len(val_df), reshuffle_each_iteration=False)
-
-    train_ds = train_ds.map(process_path, num_parallel_calls=tf.data.AUTOTUNE)
-    val_ds = val_ds.map(process_path, num_parallel_calls=tf.data.AUTOTUNE)
-
-    train_ds = configure_for_performance(train_ds, batch_size)
-    val_ds = configure_for_performance(val_ds, batch_size)
-    return classes, train_ds, val_ds
-
-# Example usage:
-# classes, train_ds, val_ds = create_training_dataset(dev1_df, dev2_df, batch_size=16)
-# print(f"Number of classes: {len(classes)}")
+        return classes, train_ds, validation_ds
+    else:
+        train_file_paths = df.file_path.values
+        train_ds = tf.data.Dataset.from_tensor_slices(train_file_paths)
+        train_ds = train_ds.shuffle(len(train_file_paths), reshuffle_each_iteration=True)
+        train_ds = train_ds.map(process_path, num_parallel_calls=autotune)
+        train_ds = configure_for_performance(train_ds, batch_size, autotune=autotune)
+       
+        return classes, train_ds, None
 
 def test_dataset(
     test_df: pd.DataFrame,
@@ -142,9 +151,11 @@ def test_dataset(
             - tf.data.Dataset: Batched, prefetched dataset of spectrograms for evaluation.
             - np.ndarray: Array of all unique test file paths.
     """
+    if autotune is None:
+        autotune = tf.data.AUTOTUNE
     all_test_paths = np.unique(test_df[['speaker_1', 'speaker_2']].values.ravel())
     test_ds = tf.data.Dataset.from_tensor_slices(all_test_paths)
     test_ds = test_ds.map(wav_to_spectrogram, num_parallel_calls=autotune)
-    test_ds = configure_for_performance(test_ds, batch_size)
+    test_ds = configure_for_performance(test_ds, batch_size, autotune=autotune)
     
     return test_ds, all_test_paths

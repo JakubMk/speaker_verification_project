@@ -3,3 +3,7 @@
 from .validate_on_testset import (
     validate_on_testset
 )
+
+from .eer import (
+    eer
+)
