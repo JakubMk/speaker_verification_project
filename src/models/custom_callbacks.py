@@ -58,7 +58,7 @@ class EERMonitor(tf.keras.callbacks.Callback):
             if improvement < self.improvement_threshold:
                 old_lr = float(tf.keras.backend.get_value(self.model.optimizer.learning_rate))
                 new_lr = max(old_lr * self.factor, self.min_lr)
-                tf.keras.backend.set_value(self.model.optimizer.learning_rate, new_lr)
+                self.model.optimizer.learning_rate = new_lr
                 print(f"Improvement was too small ({improvement:.4f})! Reducing learning rate: {old_lr:.2e} → {new_lr:.2e}")
             self.best_eer = current_eer
             self.bad_epochs = 0
@@ -68,6 +68,6 @@ class EERMonitor(tf.keras.callbacks.Callback):
             if self.bad_epochs > self.patience:
                 old_lr = float(tf.keras.backend.get_value(self.model.optimizer.learning_rate))
                 new_lr = max(old_lr * self.factor, self.min_lr)
-                tf.keras.backend.set_value(self.model.optimizer.learning_rate, new_lr)
+                self.model.optimizer.learning_rate = new_lr
                 print(f"Reducing learning rate: {old_lr:.2e} → {new_lr:.2e}")
                 self.bad_epochs = 0
