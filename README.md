@@ -57,7 +57,7 @@ Below are the Equal Error Rate plots from two training runs of the ResNet34-base
 - 10 training epochs
 
 #### EER plot (main training):
-![EER plot - main training](figures/EER_train1.png)
+![EER plot - main training](figures/EER_train1.PNG)
 
 **Finetuning**
 
@@ -69,7 +69,7 @@ Below are the Equal Error Rate plots from two training runs of the ResNet34-base
 - 4 training epochs
 
 #### EER plot (finetuning):
-![EER plot - finetuning](figures/EER_train2.png)
+![EER plot - finetuning](figures/EER_train2.PNG)
 
 - **ResNet-18**
   - [VoxCeleb1-E](figures/18eer_voxceleb1E.png)
