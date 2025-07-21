@@ -21,7 +21,7 @@ The goal of this project was to **reproduce and improve upon state-of-the-art sp
   - Developed modular, extensible classes supporting various state-of-the-art loss functions and compared several approaches:
     - **[Contrastive Learning](https://arxiv.org/abs/1503.03832):** Custom pair generation, cosine similarity matrix, custom contrastive loss (inspired by FaceNet, DeepFace, Siamese Networks). Reduced EER to 10%.
     - **Large Margin Cosine Loss ([CosFace](https://arxiv.org/abs/1801.09414)):** Implemented custom CosineLayer and LMCLoss. Achieved 9% EER.
-    - **Adaptive Cosine Loss ([AdaCos](https://arxiv.org/abs/1905.00292)):** Built AdaCosLoss layer; reached **7.5% EER** with further improvements (BatchNorm freezing, etc.).
+    - **Adaptive Cosine Loss ([AdaCos](https://arxiv.org/abs/1905.00292)):** Built AdaCosLoss layer; reached **7.5% EER** with further improvements (BatchNorm layers freezing, etc.).
     - **Lightweight Models:** Evaluated MobileNetV2 (~5M params, EER ~10%) and ResNet18 to enable more frequent training and rapid iteration on my available hardware (Nvidia RTX 3060 GPU), as larger models required long training times.
 
 ### Key Takeaways
@@ -35,16 +35,41 @@ The goal of this project was to **reproduce and improve upon state-of-the-art sp
 
 ## Final results
 
-#### **Model Performance – Equal Error Rate (EER)**
+### **Model Performance – Equal Error Rate (EER)**
 
 | Model name                         | Test Set      | EER (%)   | Threshold |
 |------------------------------------|---------------|-----------|-----------|
-| verification_model_resnet34_512dim | VoxCeleb1-E   | **4.86**  | 0.2595    |
-| verification_model_resnet34_512dim | VoxCeleb1-H   | 8.06      | 0.3082    |
+| verification_model_resnet34_512dim | VoxCeleb1-E   | **4.65**  | 0.2587    |
+| verification_model_resnet34_512dim | VoxCeleb1-H   | 7.74      | 0.3099    |
 | verification_model_resnet18_512dim | VoxCeleb1-E   | **5.50**  | 0.2586    |
 | verification_model_resnet18_512dim | VoxCeleb1-H   | 8.65      | 0.3050    |
  
-#### EER Curve Plots
+### EER Curve Plots
+
+Below are the Equal Error Rate plots from two training runs of the ResNet34-based speaker verification model. The EER was measured and logged on-the-fly by a custom callback and visualized in TensorBoard.
+
+**Main Training**
+
+#### Configuration:
+- Optimizer: SGD (`learning_rate=0.01`, `momentum=0.9`, `weight_decay=5e-4`)
+- Dynamic LR adjustment: `ReduceLROnPlateau`
+- Loss: AdaCosLoss
+- 10 training epochs
+
+#### EER plot (main training):
+![EER plot - main training](figures/EER_train1.png)
+
+**Finetuning**
+
+#### Configuration:
+- Optimizer: SGD (`learning_rate=0.0001`, `momentum=0.9`, `weight_decay=1e-2`)
+- Learning Rate Scheduler: LR reduced by 10x after each epoch
+- BatchNormalization layers frozen (other layers trainable)
+- Loss: AdaCosLoss
+- 4 training epochs
+
+#### EER plot (finetuning):
+![EER plot - finetuning](figures/EER_train2.png)
 
 - **ResNet-18**
   - [VoxCeleb1-E](figures/18eer_voxceleb1E.png)
@@ -91,7 +116,7 @@ python scripts/dataset_download.py \
 | Model                                | Base Architecture | File ID (Google Drive)            |
 | ------------------------------------ | ----------------- | --------------------------------- |
 | verification_model_resnet18_512dim   | ResNet-18         | 18dfDMvbuVP4P_Zf5FI85VSDvmReMmOTk |
-| verification_model_resnet34_512dim   | ResNet-34         | 1fMk27d0ULfB1DLyNuNI9PnVd-2PlCuVz |
+| verification_model_resnet34_512dim   | ResNet-34         | 160zM6_4dQY3IlrSaOIkW_bNGenRLqyP0 |
 
 ```sh
 python scripts/model_download.py --file_id 1ZFC-GnW6Z-zzZUh-hZoiEyIOw79xXojt --output models/pretrained_resnet18.keras

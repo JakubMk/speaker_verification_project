@@ -29,6 +29,7 @@ output/
 drafts/
 ffmpeg/
 dataset/
+outputs/
 *.out
 
 # Tokens
