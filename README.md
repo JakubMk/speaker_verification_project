@@ -119,7 +119,7 @@ python scripts/dataset_download.py \
 | verification_model_resnet34_512dim   | ResNet-34         | 160zM6_4dQY3IlrSaOIkW_bNGenRLqyP0 |
 
 ```sh
-python scripts/model_download.py --file_id 1ZFC-GnW6Z-zzZUh-hZoiEyIOw79xXojt --output models/pretrained_resnet18.keras
+python scripts/model_download.py --file_id 160zM6_4dQY3IlrSaOIkW_bNGenRLqyP0 --output models/pretrained_resnet18.keras
 ```
 
 ### 5. **Convert official test set to CSV**
@@ -144,7 +144,7 @@ python scripts/evaluate.py \
 ### 7. **Model demo for comparing two audio files**
 
 ```sh
-python scripts/verify_speaker_cli.py \
+python scripts/verify_speaker.py \
     --model models/your_model.keras \
     --rec1 path/to/first_audio.wav \
     --rec2 path/to/second_audio.wav \
