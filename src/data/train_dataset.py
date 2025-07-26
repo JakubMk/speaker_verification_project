@@ -27,12 +27,32 @@ def get_label(file_path, classes):
     # Integer encode the label
     return tf.argmax(one_hot)
 
+def pre_emphasis(signal: tf.Tensor, alpha: float = 0.97) -> tf.Tensor:
+    """
+    Apply pre‑emphasis (FIR filter) to an audio signal.
+
+    Args:
+    signal : tf.Tensor of shape (n_samples,), dtype float32/float64, obtained from `tf.audio.decode_wav`.
+    alpha : float, optional. Default is 0.97.
+
+    Returns:
+    tf.Tensor: filtered signal with the same shape and dtype as the input.
+    """
+    # Keep the first sample unchanged
+    first = signal[:1]
+
+    # Apply pre‑emphasis to the rest of the signal
+    rest = signal[1:] - alpha * signal[:-1]
+
+    return tf.concat([first, rest], axis=0)
+
 def wav_to_spectrogram(
     file_path,
     audio_in_samples=48560,
     window_length=400,
     step_length=160,
-    fft_length=1023
+    fft_length=1023,
+    preprocess_audio=False
 ):
     """
     Loads an audio file, extracts a random window, computes log-magnitude spectrogram
@@ -48,6 +68,11 @@ def wav_to_spectrogram(
     )
     audio = tf.squeeze(audio, axis=-1)
     audio_length = tf.shape(audio)[0]
+
+    if preprocess_audio:
+        audio = pre_emphasis(audio)
+        peak = tf.reduce_max(tf.abs(audio))
+        audio = tf.where(peak > 0, audio / peak, audio)
 
     # Sample random offset for a 3s window (if audio is long enough, in VC datasets it is)
     random_int = tf.random.uniform(shape=(), minval=0, maxval=(audio_length-audio_in_samples), dtype=tf.int32)
@@ -76,19 +101,21 @@ def configure_for_performance(ds, batch_size=16, autotune=None):
     return ds
 
 def create_training_dataset(
-    dev1_df: pd.DataFrame,
-    dev2_df: pd.DataFrame,
+    dev1_csv: str,
+    dev2_csv: str,
     batch_size: int = 16,
+    eer_val: bool = False,
+    preprocess_audio: bool = False,
     autotune: int = tf.data.AUTOTUNE
 ) -> Tuple[np.ndarray, tf.data.Dataset, Optional[tf.data.Dataset]]:
     """
     Creates TensorFlow training/validation datasets from DataFrames.
-    Creates TensorFlow training/validation datasets from DataFrames.
     
     Args:
-        dev1_df, dev2_df: Pandas DataFrames with at least `id` and `file_path` columns.
+        dev1_df, dev2_df: filepaths to Pandas DataFrames with at least `id` and `file_path` columns.
         batch_size: Batch size for tf.data.Dataset
         eer_val: If False, creates a validation set with the longest sample per class.
+        normalize_audio: If True, normalizes audio file before processing.
         autotune: Autotune setting for parallel processing in tf.data.Dataset
 
     Returns:
@@ -96,13 +123,16 @@ def create_training_dataset(
         train_ds: tf.data.Dataset for training
         val_ds: tf.data.Dataset for validation (if eer_val is False)
     """
+    dev1_df  = pd.read_csv(dev1_csv)
+    dev2_df = pd.read_csv(dev2_csv)
+
     df = pd.concat([dev1_df, dev2_df], ignore_index=True)
     classes = np.unique(df.id)
     classes_tf = tf.constant(classes)
 
     def process_path(file_path):
         label = get_label(file_path, classes_tf)
-        spectrogram = wav_to_spectrogram(file_path)
+        spectrogram = wav_to_spectrogram(file_path, preprocess_audio=preprocess_audio)
         return spectrogram, label
 
     if not eer_val:

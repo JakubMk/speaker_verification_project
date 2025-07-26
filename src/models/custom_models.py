@@ -22,6 +22,8 @@ class VerificationModel(tf.keras.Model):
         self,
         base_model,
         number_of_classes,
+        normalization_layer,
+        cosine_layer,
         embedding_dim: int = 512,
         return_embedding: bool = False,
         base_training: bool = False,
@@ -40,10 +42,8 @@ class VerificationModel(tf.keras.Model):
             use_bias=True,
             name='embedding_dense'
         )
-        self.normalization_layer = L2Normalization()
-        self.cosine_layer = CosineLayer(
-            number_of_classes, use_bias=False, name='cosine_softmax'
-        )
+        self.normalization_layer = normalization_layer#L2Normalization()
+        self.cosine_layer = cosine_layer#CosineLayer(       number_of_classes, use_bias=False, name='cosine_softmax'            )
 
     def call(self, inputs, training=None):
         """

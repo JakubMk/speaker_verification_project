@@ -1,0 +1,99 @@
+# train.yaml
+
+verification_model:
+  finetune: False
+  resnet:
+    _target_: classification_models.tfkeras.Classifiers.get
+    _args_: ['resnet34']
+  resnet_name: ResNet34_Base
+  global_pool:
+    _target_: tensorflow.keras.layers.GlobalAveragePooling2D
+  model:
+    _partial_: true
+    _target_: src.models.VerificationModel
+    normalization_layer:
+      _target_: src.models.L2Normalization
+    cosine_layer:
+      _partial_: true
+      _target_: src.models.CosineLayer
+      use_bias: False
+      name: cosine_softmax
+    embedding_dim: 512
+    return_embedding: False
+    base_training: True
+    name: verification_model_resnet34_512dim
+  load_model:
+    _target_: tensorflow.keras.models.load_model
+    model_path: ${callbacks.eer_monitor.model_path}
+
+dataset:
+  _target_: src.data.create_training_dataset
+  dev1_csv: csv/vc2_dev_ok.csv
+  dev2_csv: csv/vc2_test_ok.csv
+  batch_size: 32
+  preprocess_audio: True
+  eer_val: True
+
+tensorboard:
+  log_dir: logs/fit/main_run
+  histogram_freq: 1
+
+stage1:
+  initial_epoch: 0
+  epochs: 10
+  loss_fn_partial:
+    _partial_: true
+    _target_: src.models.AdaCosLoss
+  optimizer:
+    _target_: tensorflow.keras.optimizers.SGD
+    learning_rate: 0.01
+    momentum: 0.9
+    weight_decay: 5e-4
+  metrics: sparse_categorical_accuracy
+
+stage2:
+  resume_best: true
+  initial_epoch: ${stage1.epochs}
+  epochs: 14
+  optimizer:
+    _target_: tensorflow.keras.optimizers.SGD
+    learning_rate: 0.001
+    momentum: 0.9
+    weight_decay: 1e-2
+  metrics: sparse_categorical_accuracy
+
+callbacks:
+  eer_monitor:
+    _target_: src.models.EERMonitor
+    test_df_path: csv/VoxCeleb1-E.csv
+    eer_fn: src.eval.eer
+    model_path: models/best_model.keras
+    patience: 3
+    log_dir: ${tensorboard.log_dir}
+    steps_interval: [7000, 13000, 20000, 28000]
+  
+  reduce_lr_on_plateau:
+    _target_: tensorflow.keras.callbacks.ReduceLROnPlateau
+    monitor: loss
+    factor: 0.5
+    patience: 1
+    verbose: 1
+    mode: min
+    min_lr: 1e-8
+
+  lr_scheduler_partial:
+    _partial_: true
+    _target_: tensorflow.keras.callbacks.LearningRateScheduler
+
+  checkpoint:
+    _target_: tensorflow.keras.callbacks.ModelCheckpoint
+    filepath: checkpoint/ckpResNet34_{epoch:02d}_valLoss{loss:.4f}_valAcc{sparse_categorical_accuracy:.4f}.keras
+    monitor: sparse_categorical_accuracy
+    save_best_only: False
+    save_weights_only: False
+    verbose: 1
+
+  tensorboard_callback:
+    _target_: tensorflow.keras.callbacks.TensorBoard
+    log_dir: ${tensorboard.log_dir}
+    histogram_freq: ${tensorboard.histogram_freq}
