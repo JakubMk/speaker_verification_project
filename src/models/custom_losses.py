@@ -1,8 +1,9 @@
 import tensorflow as tf
+import keras
 import numpy as np
 from src.utils import prepare_masks
 
-@tf.keras.utils.register_keras_serializable()
+@keras.saving.register_keras_serializable()
 class AdaCosLoss(tf.keras.losses.Loss):
     """
     Adaptive Cosine Loss (AdaCos).
@@ -32,40 +33,42 @@ class AdaCosLoss(tf.keras.losses.Loss):
         Returns:
             Tensor scalar: Mean AdaCos loss over the batch.
         """
-        batch_size = tf.shape(y_pred)[0]
         y_true = tf.cast(y_true, tf.int32)
         y_pred = tf.clip_by_value(
             y_pred, 
             -1.0 + tf.keras.backend.epsilon(), 
             1.0 - tf.keras.backend.epsilon()
         )
-        # correct class mask (margin subtraction)
-        mask = tf.one_hot(y_true, depth=self.num_classes)
+        # correct class mask
+        mask = tf.one_hot(y_true, depth=self.num_classes) # shape (batch_size, n_classes)
         # get theta angles for corresponding class
-        theta_true = tf.math.acos(tf.boolean_mask(y_pred, mask))
+        theta_true = tf.math.acos(tf.boolean_mask(y_pred, mask)) # shape (batch_size,)
         # compute median of 'correct' angles
         theta_med = tf.keras.ops.median(theta_true)
         # get non-corresponding cosine values (cos(theta) j is not yi)
-        neg_mask = tf.cast(tf.logical_not(mask > 0), dtype=tf.float32)
-        cos_theta_neg = tf.boolean_mask(y_pred, neg_mask)
-        neg_y_pred = tf.reshape(cos_theta_neg, [batch_size, self.num_classes - 1])
-        B_avg = tf.reduce_mean(tf.reduce_sum(tf.math.exp(self.scale * neg_y_pred), axis=-1))
-        B_avg = tf.cast(B_avg, tf.float32)
+        neg_mask = tf.logical_not(mask > 0) # shape (batch_size, n_classes)
+        cos_theta_neg = tf.boolean_mask(y_pred, neg_mask) # shape (batch_size*(n_classes-1),)
 
-        with tf.control_dependencies([theta_med, B_avg]):
-            new_scale = (
-                tf.math.log(B_avg) / 
-                tf.math.cos(tf.minimum(tf.constant(np.pi / 4), theta_med))
-            )
-            # keep current scale if new_scale is invalid
-            safe_scale = tf.cond(
-                tf.math.is_finite(new_scale) & (new_scale > 0),
-                lambda: new_scale,
-                lambda: self.scale
-            )
-            self.scale.assign(safe_scale)
-            logits = self.scale * y_pred
-            loss = tf.nn.sparse_softmax_cross_entropy_with_logits(labels=y_true, logits=logits)
+        neg_y_pred = tf.reshape(cos_theta_neg, [-1, self.num_classes - 1]) # shape (batch_size, n_classes-1)
+        
+        B_avg = tf.reduce_mean(tf.reduce_sum(tf.math.exp(self.scale * neg_y_pred), axis=-1))
+        #B_avg = tf.cast(B_avg, tf.float32)
+
+        #with tf.control_dependencies([theta_med, B_avg]):
+        new_scale = (
+            tf.math.log(B_avg) / 
+            tf.math.cos(tf.minimum(tf.constant(np.pi / 4), theta_med))
+        )
+        # keep current scale if new_scale is invalid
+        safe_scale = tf.cond(
+            tf.math.is_finite(new_scale) & (new_scale > 0),
+            lambda: new_scale,
+            lambda: self.scale
+        )
+        self.scale.assign(safe_scale)
+        logits = self.scale * y_pred
+        loss = tf.nn.sparse_softmax_cross_entropy_with_logits(labels=y_true, logits=logits)
+        
         return tf.reduce_mean(loss)
 
     def get_config(self):
@@ -91,7 +94,7 @@ class AdaCosLoss(tf.keras.losses.Loss):
             raise ValueError(f"`num_classes` must be >= 2, got {value}")
         self._num_classes = value
 
-@tf.keras.utils.register_keras_serializable()
+@keras.saving.register_keras_serializable()
 class AdaCosLossMargin(tf.keras.losses.Loss):
     """
     Adaptive Cosine Loss with Margin (AdaCosMargin).
@@ -197,7 +200,7 @@ class AdaCosLossMargin(tf.keras.losses.Loss):
             raise ValueError(f"`margin` must be between 0.0 and 1.0, got {value}")
         self._margin = value
 
-@tf.keras.utils.register_keras_serializable()
+@keras.saving.register_keras_serializable()
 class LMCLoss(tf.keras.losses.Loss):
     """
     Large Margin Cosine Loss (LMCLoss), also known as CosFace loss.
@@ -276,7 +279,7 @@ class LMCLoss(tf.keras.losses.Loss):
     def __str__(self):
         return self.__repr__()
     
-@tf.keras.utils.register_keras_serializable()
+@keras.saving.register_keras_serializable()
 class ContrastiveLoss(tf.keras.losses.Loss):
     """
     Custom contrastive loss for speaker verification using cosine similarity.

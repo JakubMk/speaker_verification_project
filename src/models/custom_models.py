@@ -2,7 +2,7 @@ import keras
 import tensorflow as tf
 from src.models.custom_layers import L2Normalization, CosineLayer
 
-@tf.keras.utils.register_keras_serializable()
+@keras.saving.register_keras_serializable()
 class VerificationModel(tf.keras.Model):
     """
     Modular Speaker Verification Model.
@@ -42,8 +42,8 @@ class VerificationModel(tf.keras.Model):
             use_bias=True,
             name='embedding_dense'
         )
-        self.normalization_layer = normalization_layer#L2Normalization()
-        self.cosine_layer = cosine_layer#CosineLayer(       number_of_classes, use_bias=False, name='cosine_softmax'            )
+        self.normalization_layer = normalization_layer
+        self.cosine_layer = cosine_layer
 
     def call(self, inputs, training=None):
         """
@@ -69,15 +69,23 @@ class VerificationModel(tf.keras.Model):
         base_config = super().get_config()
         return {
             **base_config,
-            'base_model': tf.keras.saving.serialize_keras_object(self.base_model),
-            'number_of_classes': self.number_of_classes,
-            'embedding_dim': self.embedding_dim,
-            'return_embedding': self.return_embedding,
-            'base_training': self.base_training,
+            "base_model": keras.saving.serialize_keras_object(self.base_model),
+            "normalization_layer": keras.saving.serialize_keras_object(
+                self.normalization_layer
+            ),
+            "cosine_layer": keras.saving.serialize_keras_object(self.cosine_layer),
+            "number_of_classes": self.number_of_classes,
+            "embedding_dim": self.embedding_dim,
+            "return_embedding": self.return_embedding,
+            "base_training": self.base_training,
         }
 
     @classmethod
     def from_config(cls, config):
-        base_model_config = config.pop('base_model')
-        base_model = keras.saving.deserialize_keras_object(base_model_config)
-        return cls(base_model=base_model, **config)
+        base_model = keras.saving.deserialize_keras_object(config.pop("base_model"))
+        normalization_layer = keras.saving.deserialize_keras_object(config.pop("normalization_layer"))
+        cosine_layer = keras.saving.deserialize_keras_object(config.pop("cosine_layer"))
+        return cls(base_model=base_model,
+                   normalization_layer=normalization_layer,
+                   cosine_layer=cosine_layer,
+                   **config)

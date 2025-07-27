@@ -1,6 +1,7 @@
 import tensorflow as tf
+import keras
 
-@tf.keras.utils.register_keras_serializable()
+@keras.saving.register_keras_serializable()
 class L2Normalization(tf.keras.layers.Layer):
     """
     Applies L2 normalization to the last axis of the input tensor.
@@ -14,7 +15,7 @@ class L2Normalization(tf.keras.layers.Layer):
     def compute_output_shape(self, input_shape):
         return input_shape
 
-@tf.keras.utils.register_keras_serializable()
+@keras.saving.register_keras_serializable()
 class CosineLayer(tf.keras.layers.Layer):
     """
     Dense layer with L2-normalized weights, for cosine similarity-based classification.

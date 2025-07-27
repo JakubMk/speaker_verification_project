@@ -1,7 +1,8 @@
 import tensorflow as tf
+import keras
 from src.utils import contrastive_accuracy
 
-@tf.keras.utils.register_keras_serializable()
+@keras.saving.register_keras_serializable()
 class ContrastiveAccuracy(tf.keras.metrics.Metric):
     """
     Computes accuracy, precision, and recall for a contrastive (pair-based) speaker verification setup

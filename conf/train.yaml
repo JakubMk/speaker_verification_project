@@ -65,13 +65,16 @@ stage2:
 callbacks:
   eer_monitor:
     _target_: src.models.EERMonitor
-    test_df_path: csv/VoxCeleb1-E.csv
-    eer_fn: src.eval.eer
     model_path: models/best_model.keras
-    patience: 3
+    test_df_path: csv/VoxCeleb1-E.csv
+    eer_fn:
+      _partial_: true
+      _target_: src.eval.eer
+      batch_size: ${dataset.batch_size}
     log_dir: ${tensorboard.log_dir}
+    patience: 4
     steps_interval: [7000, 13000, 20000, 28000]
-  
+
   reduce_lr_on_plateau:
     _target_: tensorflow.keras.callbacks.ReduceLROnPlateau
     monitor: loss

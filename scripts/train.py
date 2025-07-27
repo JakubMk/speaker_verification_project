@@ -3,9 +3,6 @@ from hydra.utils import instantiate
 from omegaconf import DictConfig, OmegaConf
 import tensorflow as tf
 
-def scheduler(epoch, lr):
-    return lr * 0.1
-
 @hydra.main(version_base=None, config_path="../conf", config_name="train")
 def main(cfg: DictConfig) -> None:
     # dataset
@@ -41,6 +38,9 @@ def main(cfg: DictConfig) -> None:
                               name=cfg.verification_model.model.name)
     else:
         model = instantiate(cfg.verification_model.load_model)
+
+    def scheduler(epoch, lr):
+        return lr * 0.2
 
     # callbacks
     checkpoint_cb = instantiate(cfg.callbacks.checkpoint)
