@@ -10,7 +10,7 @@ def main(cfg: DictConfig) -> None:
 
     # normalization and cosine layer
     norm_layer = instantiate(cfg.verification_model.model.normalization_layer)
-    cosine_layer_partial = hydra.utils.instantiate(cfg.verification_model.model.cosine_layer)
+    cosine_layer_partial = instantiate(cfg.verification_model.model.cosine_layer)
     cosine_layer = cosine_layer_partial(out_features=len(classes))
 
     # build model
@@ -27,7 +27,7 @@ def main(cfg: DictConfig) -> None:
         base_model = build_resnet_model()
 
         # instantiate the verification model
-        model_partial = hydra.utils.instantiate(cfg.verification_model.model)
+        model_partial = instantiate(cfg.verification_model.model)
         model = model_partial(base_model=base_model,
                               number_of_classes=len(classes),
                               normalization_layer=norm_layer,
@@ -39,8 +39,13 @@ def main(cfg: DictConfig) -> None:
     else:
         model = instantiate(cfg.verification_model.load_model)
 
-    def scheduler(epoch, lr):
-        return lr * 0.2
+    epoch_init = cfg.stage1.epochs
+    def scheduler(epoch, lr, epoch_init=epoch_init):
+        if epoch == epoch_init:
+            return lr * 0.1
+        else:
+            return lr * 0.2
+
 
     # callbacks
     checkpoint_cb = instantiate(cfg.callbacks.checkpoint)

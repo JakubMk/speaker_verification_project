@@ -78,8 +78,9 @@ callbacks:
   reduce_lr_on_plateau:
     _target_: tensorflow.keras.callbacks.ReduceLROnPlateau
     monitor: loss
-    factor: 0.5
-    patience: 1
+    factor: 0.3
+    patience: 0
+    min_delta: 0.1
     verbose: 1
     mode: min
     min_lr: 1e-8
