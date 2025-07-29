@@ -37,9 +37,9 @@ def eer(model: VerificationModel, test_df: pd.DataFrame, batch_size: int = 16) -
 
     test_df['cosine_similarity'] = test_df.apply(get_cosine_similarity, axis=1)
 
-    margins = np.linspace(-0.99, 0.99, 20000)
+    margins = np.linspace(-0.99, 0.99, 2000)
     y_true = test_df.y_true.values
-
+    
     results = []
     total_negatives = (y_true == 0).sum()
     total_positives = (y_true == 1).sum()
