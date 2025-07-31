@@ -31,16 +31,16 @@ dataset:
   dev1_csv: csv/vc2_dev_ok.csv
   dev2_csv: csv/vc2_test_ok.csv
   batch_size: 32
-  preprocess_audio: False
   eer_val: True
-
+  preprocess_audio: False
+  
 tensorboard:
-  log_dir: logs/fit/main_run
+  log_dir: logs/fit/second_run2
   histogram_freq: 1
 
 stage1:
   initial_epoch: 0
-  epochs: 10
+  epochs: 6
   loss_fn_partial:
     _partial_: true
     _target_: src.models.AdaCosLoss
@@ -54,7 +54,7 @@ stage1:
 stage2:
   resume_best: true
   initial_epoch: ${stage1.epochs}
-  epochs: 14
+  epochs: 10
   optimizer:
     _target_: tensorflow.keras.optimizers.SGD
     learning_rate: 0.001

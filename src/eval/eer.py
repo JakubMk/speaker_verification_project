@@ -21,7 +21,7 @@ def eer(model: VerificationModel, test_df: pd.DataFrame, batch_size: int = 16) -
     """
     test_df = test_df.copy()
     model.return_embedding = True  # Enable embeddings output
-
+    model.base_training = False
     # Get all embeddings for the test set
     test_ds, all_test_paths = test_dataset(test_df, batch_size=batch_size)
     y_pred_model = model.predict(test_ds, batch_size=batch_size)
@@ -61,6 +61,7 @@ def eer(model: VerificationModel, test_df: pd.DataFrame, batch_size: int = 16) -
         })
 
     model.return_embedding = False  # Reset to default
+    model.base_training = True
 
     eer_df = pd.DataFrame(results)
     eer_row = eer_df.loc[eer_df['diff'].idxmin()]

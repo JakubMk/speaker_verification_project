@@ -57,6 +57,7 @@ def main(cfg: DictConfig) -> None:
 
     loss_partial = hydra.utils.instantiate(cfg.stage1.loss_fn_partial)
 
+
     # model compilation
     model.compile(
         optimizer=instantiate(cfg.stage1.optimizer),
@@ -64,6 +65,8 @@ def main(cfg: DictConfig) -> None:
         metrics=[cfg.stage1.metrics]
     )
 
+    print(model.summary())
+    
     history = model.fit(
         train_ds,
         validation_data=validation_ds,
@@ -79,6 +82,13 @@ def main(cfg: DictConfig) -> None:
         loss=loss_partial(num_classes=len(classes)),
         metrics=[cfg.stage2.metrics],
     )
+
+
+    for layer in model.base_model.layers:
+        if isinstance(layer, tf.keras.layers.BatchNormalization):
+            layer.trainable = False
+        else:
+            layer.trainable = True
 
     history2 = model.fit(
         train_ds,
