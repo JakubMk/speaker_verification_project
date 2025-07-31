@@ -20,7 +20,6 @@ verification_model:
       name: cosine_softmax
     embedding_dim: 512
     return_embedding: False
-    base_training: True
     name: verification_model_resnet34_512dim
   load_model:
     _target_: tensorflow.keras.models.load_model

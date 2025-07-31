@@ -26,7 +26,6 @@ class VerificationModel(tf.keras.Model):
         cosine_layer,
         embedding_dim: int = 512,
         return_embedding: bool = False,
-        base_training: bool = False,
         **kwargs
     ):
         super().__init__(**kwargs)
@@ -34,7 +33,6 @@ class VerificationModel(tf.keras.Model):
         self.embedding_dim = embedding_dim
         self.number_of_classes = number_of_classes
         self.return_embedding = return_embedding
-        self.base_training = base_training
 
         self.embedding_layer = tf.keras.layers.Dense(
             embedding_dim,
@@ -55,10 +53,8 @@ class VerificationModel(tf.keras.Model):
         Returns:
             Embeddings (if return_embedding=True) or logits for classification.
         """
-        # set training option for base model
-        base_training = self.base_training if self.base_training is not None else training
 
-        x = self.base_model(inputs, training=base_training)
+        x = self.base_model(inputs, training=training)
         x = self.embedding_layer(x)
         x = self.normalization_layer(x)
         if self.return_embedding:
@@ -76,8 +72,7 @@ class VerificationModel(tf.keras.Model):
             "cosine_layer": keras.saving.serialize_keras_object(self.cosine_layer),
             "number_of_classes": self.number_of_classes,
             "embedding_dim": self.embedding_dim,
-            "return_embedding": self.return_embedding,
-            "base_training": self.base_training,
+            "return_embedding": self.return_embedding
         }
 
     @classmethod

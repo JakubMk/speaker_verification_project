@@ -34,7 +34,6 @@ def main(cfg: DictConfig) -> None:
                               cosine_layer=cosine_layer,
                               embedding_dim=cfg.verification_model.model.embedding_dim,
                               return_embedding=cfg.verification_model.model.return_embedding,
-                              base_training=cfg.verification_model.model.base_training,
                               name=cfg.verification_model.model.name)
     else:
         model = instantiate(cfg.verification_model.load_model)
