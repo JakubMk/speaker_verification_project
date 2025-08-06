@@ -1,8 +1,8 @@
 # train.yaml
 
 verification_model:
-  load_saved_model: True #load a pre-trained model from ${verification_model.model_path} (True), or build and train a new model (False)
-  model_path: checkpoint/ckpResNet34_06_valLoss1.0440_valAcc0.9331.keras #${callbacks.eer_monitor.model_path}
+  load_saved_model: False #load a pre-trained model from ${verification_model.model_path} (True), or build and train a new model (False)
+  model_path: ${callbacks.eer_monitor.model_path}
   resnet:
     _target_: classification_models.tfkeras.Classifiers.get
     _args_: ['resnet34']
@@ -35,12 +35,12 @@ dataset:
 eer_testset: csv/VoxCeleb1-E.csv
   
 tensorboard:
-  log_dir: logs/fit/experiments2
+  log_dir: logs/fit/run1
   histogram_freq: 1
 
 # main training phase: from scratch
 stage1:
-  execute: False
+  execute: True
   initial_epoch: 0
   epochs: 10
   loss_fn_partial:
@@ -56,7 +56,7 @@ stage1:
 # fine-tuning phase
 stage2:
   execute: True
-  resume_from_best: false # whether to load best model from stage1 ${callbacks.eer_monitor.model_path}
+  resume_from_best: True # whether to load best model from stage1 ${callbacks.eer_monitor.model_path}
   initial_epoch: ${stage1.epochs}
   epochs: 16
   optimizer:
