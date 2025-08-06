@@ -1,7 +1,8 @@
 # train.yaml
 
 verification_model:
-  finetune: False
+  load_saved_model: True #load a pre-trained model from ${verification_model.model_path} (True), or build and train a new model (False)
+  model_path: checkpoint/ckpResNet34_06_valLoss1.0440_valAcc0.9331.keras #${callbacks.eer_monitor.model_path}
   resnet:
     _target_: classification_models.tfkeras.Classifiers.get
     _args_: ['resnet34']
@@ -21,25 +22,27 @@ verification_model:
     embedding_dim: 512
     return_embedding: False
     name: verification_model_resnet34_512dim
-  load_model:
-    _target_: tensorflow.keras.models.load_model
-    model_path: ${callbacks.eer_monitor.model_path}
 
 dataset:
   _target_: src.data.create_training_dataset
   dev1_csv: csv/vc2_dev_ok.csv
   dev2_csv: csv/vc2_test_ok.csv
   batch_size: 32
-  eer_val: True
+  eer_val: True # whether to use all data for training, validation on ${eer_testset}
   preprocess_audio: False
+
+# Test set for EER evaluation
+eer_testset: csv/VoxCeleb1-E.csv
   
 tensorboard:
-  log_dir: logs/fit/second_run2
+  log_dir: logs/fit/experiments2
   histogram_freq: 1
 
+# main training phase: from scratch
 stage1:
+  execute: False
   initial_epoch: 0
-  epochs: 6
+  epochs: 10
   loss_fn_partial:
     _partial_: true
     _target_: src.models.AdaCosLoss
@@ -50,28 +53,32 @@ stage1:
     weight_decay: 5e-4
   metrics: sparse_categorical_accuracy
 
+# fine-tuning phase
 stage2:
-  resume_best: true
+  execute: True
+  resume_from_best: false # whether to load best model from stage1 ${callbacks.eer_monitor.model_path}
   initial_epoch: ${stage1.epochs}
-  epochs: 10
+  epochs: 16
   optimizer:
     _target_: tensorflow.keras.optimizers.SGD
-    learning_rate: 0.001
+    learning_rate: 0.0005
     momentum: 0.9
-    weight_decay: 1e-2
+    weight_decay: 1e-1
   metrics: sparse_categorical_accuracy
+  eer_factor: 0.2
+  eer_min_lr: ${callbacks.reduce_lr_on_plateau.min_lr}
 
 callbacks:
   eer_monitor:
+    _partial_: true
     _target_: src.models.EERMonitor
     model_path: models/best_model.keras
-    test_df_path: csv/VoxCeleb1-E.csv
     eer_fn:
       _partial_: true
       _target_: src.eval.eer
       batch_size: ${dataset.batch_size}
     log_dir: ${tensorboard.log_dir}
-    patience: 5
+    patience: 5 # changed in stage2 to 2 (for quicker lr changes)
     steps_interval: [7000, 13000, 20000, 28000]
 
   reduce_lr_on_plateau:
@@ -79,10 +86,10 @@ callbacks:
     monitor: loss
     factor: 0.3
     patience: 0
-    min_delta: 0.2
+    min_delta: 0.25
     verbose: 1
     mode: min
-    min_lr: 1e-8
+    min_lr: 1e-9
 
   lr_scheduler_partial:
     _partial_: true
