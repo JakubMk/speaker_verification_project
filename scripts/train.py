@@ -97,7 +97,7 @@ def main(cfg: DictConfig) -> None:
             validation_data=validation_ds,
             initial_epoch=cfg.stage2.initial_epoch,
             epochs=cfg.stage2.epochs,
-            callbacks=[eer_cb, checkpoint_cb, lr_scheduler, tensorboard_callback],
+            callbacks=[eer_cb, checkpoint_cb, tensorboard_callback],
         )
 
 if __name__ == "__main__":
