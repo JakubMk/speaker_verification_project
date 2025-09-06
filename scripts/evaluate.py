@@ -1,7 +1,6 @@
 import argparse
 import pandas as pd
 import tensorflow as tf
-from src.models import L2Normalization, CosineLayer, AdaCosLoss, AdaCosLossMargin, LMCLoss, VerificationModel
 from src.eval import validate_on_testset
 from src.utils import plot_eer_curve
 from classification_models.tfkeras import Classifiers
@@ -24,10 +23,10 @@ if __name__ == "__main__":
     print("Running evaluation...")
     eer_df, test_df_out, eer_row = validate_on_testset(model, test_df, batch_size=args.batch_size)
 
-    #print("Best EER threshold row:\n", eer_row)
+    print("Best EER threshold row:\n", eer_row)
     if args.output:
         eer_df.to_csv(args.output, index=False)
         print(f"EER results saved to {args.output}")
 
     if args.plot:
-        plot_eer_curve(eer_df)
+        plot_eer_curve(eer_df, testset_name=args.test_csv, model_name=model.name)

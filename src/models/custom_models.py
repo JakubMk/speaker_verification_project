@@ -37,9 +37,10 @@ class VerificationModel(tf.keras.Model):
         self.embedding_layer = tf.keras.layers.Dense(
             embedding_dim,
             activation='tanh',
-            use_bias=True,
+            use_bias=False,
             name='embedding_dense'
         )
+        self.bn_neck = tf.keras.layers.BatchNormalization(name="bn_neck")
         self.normalization_layer = normalization_layer
         self.cosine_layer = cosine_layer
 
@@ -56,6 +57,7 @@ class VerificationModel(tf.keras.Model):
 
         x = self.base_model(inputs, training=training)
         x = self.embedding_layer(x)
+        x = self.bn_neck(x, training=training)
         x = self.normalization_layer(x)
         if self.return_embedding:
             return x

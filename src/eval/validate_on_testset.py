@@ -2,8 +2,9 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 from src.data import test_dataset
+from src.models import VerificationModel
 
-def validate_on_testset(model, test_df: pd.DataFrame, batch_size: int = 16):
+def validate_on_testset(model: VerificationModel, test_df: pd.DataFrame, batch_size: int = 16):
     """
     Evaluates a speaker verification model on the provided test set using cosine similarity and computes EER.
 
@@ -33,9 +34,9 @@ def validate_on_testset(model, test_df: pd.DataFrame, batch_size: int = 16):
         return np.dot(emb1, emb2)
 
     # Apply the cosine similarity function to each row in the test DataFrame
-    test_df['cosine_similarity'] = test_df.progress_apply(get_cosine_similarity, axis=1)
+    test_df['cosine_similarity'] = test_df.apply(get_cosine_similarity, axis=1)
 
-    margins = np.linspace(-0.99, 0.99, 2000)
+    margins = np.linspace(-0.99, 0.99, 20000)
     y_true = test_df['y_true']
 
     results = []
@@ -54,5 +55,5 @@ def validate_on_testset(model, test_df: pd.DataFrame, batch_size: int = 16):
 
     eer_df = pd.DataFrame(results)
     eer_row = eer_df.loc[eer_df['diff'].idxmin()]
-    
+
     return eer_df, test_df, eer_row

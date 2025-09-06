@@ -61,11 +61,11 @@ stage2:
   epochs: 16
   optimizer:
     _target_: tensorflow.keras.optimizers.SGD
-    learning_rate: 0.0005
+    learning_rate: 0.0001
     momentum: 0.9
-    weight_decay: 1e-1
+    weight_decay: 1e-2
   metrics: sparse_categorical_accuracy
-  eer_factor: 0.2
+  eer_factor: 0.4
   eer_min_lr: ${callbacks.reduce_lr_on_plateau.min_lr}
 
 callbacks:
@@ -83,13 +83,13 @@ callbacks:
 
   reduce_lr_on_plateau:
     _target_: tensorflow.keras.callbacks.ReduceLROnPlateau
-    monitor: loss
+    monitor: eer
     factor: 0.3
     patience: 0
-    min_delta: 0.25
+    min_delta: 5e-4
     verbose: 1
     mode: min
-    min_lr: 1e-9
+    min_lr: 1e-8
 
   lr_scheduler_partial:
     _partial_: true

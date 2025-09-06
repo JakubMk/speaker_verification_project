@@ -3,6 +3,7 @@ from hydra.utils import instantiate
 from omegaconf import DictConfig, OmegaConf
 import tensorflow as tf
 import pandas as pd
+import math
 
 @hydra.main(version_base=None, config_path="../conf", config_name="train")
 def main(cfg: DictConfig) -> None:
@@ -14,6 +15,12 @@ def main(cfg: DictConfig) -> None:
     norm_layer = instantiate(cfg.verification_model.model.normalization_layer)
     cosine_layer_partial = instantiate(cfg.verification_model.model.cosine_layer)
     cosine_layer = cosine_layer_partial(out_features=len(classes))
+
+    # stage 1 epoch lr_scheduler
+    def lr_schedule(epoch, lr, total_epochs=cfg.stage1.epochs, min_lr=1e-8):
+        progress = (epoch) / max(1, total_epochs)
+        return min_lr + 0.5 * (lr - min_lr) * (1 + math.cos(math.pi * progress))
+
 
     # stage 2 epoch lr_scheduler
     def scheduler(epoch, lr):
@@ -75,7 +82,8 @@ def main(cfg: DictConfig) -> None:
     if cfg.stage2.execute:
         eer_cb.factor = cfg.stage2.eer_factor
         eer_cb.min_lr = cfg.stage2.eer_min_lr
-        eer_cb.patience = 2
+        eer_cb.patience = 1
+        eer_cb.steps_interval = [7000, 14000, 21000, 28000]
 
         if cfg.stage2.resume_from_best:
             model = tf.keras.models.load_model(eer_cb.model_path)
@@ -86,11 +94,11 @@ def main(cfg: DictConfig) -> None:
             metrics=[cfg.stage2.metrics],
         )
 
-        # for layer in model.base_model.layers:
-        #     if isinstance(layer, tf.keras.layers.BatchNormalization):
-        #         layer.trainable = False
-        #     else:
-        #         layer.trainable = True
+        for layer in model.base_model.layers:
+            if isinstance(layer, tf.keras.layers.BatchNormalization):
+                layer.trainable = False
+            else:
+                layer.trainable = True
 
         history2 = model.fit(
             train_ds,
@@ -102,3 +110,4 @@ def main(cfg: DictConfig) -> None:
 
 if __name__ == "__main__":
     main()
+    #export PYTHONPATH="$PWD"
