@@ -3,7 +3,6 @@ from hydra.utils import instantiate
 from omegaconf import DictConfig, OmegaConf
 import tensorflow as tf
 import pandas as pd
-import math
 
 @hydra.main(version_base=None, config_path="../conf", config_name="train")
 def main(cfg: DictConfig) -> None:
@@ -15,12 +14,6 @@ def main(cfg: DictConfig) -> None:
     norm_layer = instantiate(cfg.verification_model.model.normalization_layer)
     cosine_layer_partial = instantiate(cfg.verification_model.model.cosine_layer)
     cosine_layer = cosine_layer_partial(out_features=len(classes))
-
-    # stage 1 epoch lr_scheduler
-    def lr_schedule(epoch, lr, total_epochs=cfg.stage1.epochs, min_lr=1e-8):
-        progress = (epoch) / max(1, total_epochs)
-        return min_lr + 0.5 * (lr - min_lr) * (1 + math.cos(math.pi * progress))
-
 
     # stage 2 epoch lr_scheduler
     def scheduler(epoch, lr):
@@ -110,4 +103,3 @@ def main(cfg: DictConfig) -> None:
 
 if __name__ == "__main__":
     main()
-    #export PYTHONPATH="$PWD"
