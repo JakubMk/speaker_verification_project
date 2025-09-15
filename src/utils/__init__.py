@@ -20,4 +20,5 @@ from .plot_tools import (
 
 from .demo_utils import (
     verify_speaker,
+    convert_to_wav
     )

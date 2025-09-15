@@ -2,6 +2,16 @@
 
 An end-to-end pipeline for automatic large-scale speaker verification using VoxCeleb datasets, advanced data augmentation, and state-of-the-art deep learning techniques.
 
+<p align="center">
+  <a href="https://huggingface.co/spaces/2pift/Speaker_Verification_Demo">
+    <img src="figures/sv_demo.gif" alt="Demo" width="600"/>
+  </a>
+</p>
+
+<p align="center">
+  <a href="https://huggingface.co/spaces/2pift/Speaker_Verification_Demo">Try it on Hugging Face Spaces</a>
+</p>
+
 ## Project Overview
 
 The goal of this project was to **reproduce and extend upon state-of-the-art speaker verification methods described in the VoxCeleb papers**. I focused on building a full ML pipeline, including dataset preparation, data augmentation, model design, and custom training workflows.
