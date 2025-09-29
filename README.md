@@ -55,8 +55,8 @@ My **ResNet-34 achieved 4.41% and 7.72% respectively**.
 |------------------------------------|---------------|-----------|-----------|
 | verification_model_resnet34_512dim | VoxCeleb1-E   | **4.41**  | 0.2468    |
 | verification_model_resnet34_512dim | VoxCeleb1-H   | 7.72      | 0.3006    |
-| verification_model_resnet18_512dim | VoxCeleb1-E   | **5.50**  | 0.2586    |
-| verification_model_resnet18_512dim | VoxCeleb1-H   | 8.65      | 0.3050    |
+| verification_model_resnet18_512dim | VoxCeleb1-E   | **4.69**  | 0.2586    |
+| verification_model_resnet18_512dim | VoxCeleb1-H   | 7.81      | 0.3050    |
 
 ### EER Curve Plots
 
@@ -124,7 +124,7 @@ python scripts/dataset_download.py \
 
 | Model                                | Base Architecture | File ID (Google Drive)            |
 | ------------------------------------ | ----------------- | --------------------------------- |
-| verification_model_resnet18_512dim   | ResNet-18         | 18dfDMvbuVP4P_Zf5FI85VSDvmReMmOTk |
+| verification_model_resnet18_512dim   | ResNet-18         | 1YCBb8PCSdTW4eBrAuQFBeSNrPG3wVuxi |
 | verification_model_resnet34_512dim   | ResNet-34         | 19wtOkYfGg0_g-5GBBGi82nqr-80IlBhd |
 
 ```sh
