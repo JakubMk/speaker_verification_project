@@ -43,11 +43,13 @@ def download_zip(download_links: Path, dataset_dir: Path) -> Path:
         Exception: If a download fails for other reasons.
     """
     links = []
-    dataset_dir = Path(dataset_dir)
 
     if not (download_links.exists() and download_links.is_file()):
         raise FileNotFoundError(f"Download links file '{download_links}' does not exist.")
     
+    if download_links.suffix.lower() != '.txt' and download_links.suffix.lower() != '.csv':
+        raise ValueError(f"Expected download_links to be a '.txt' or '.csv' file, got '{download_links.suffix.lower()}' instead.")
+
     if not dataset_dir.exists():
         print(f"Dataset directory '{dataset_dir}' does not exist. Creating it now.\n")
         dataset_dir.mkdir(parents=True, exist_ok=True)
@@ -324,6 +326,8 @@ def extract_id(audio_path: Path) -> str:
     Returns:
         str: The extracted speaker ID.
     """
+    if len(audio_path.parts) < 3:
+        raise ValueError(f"Path {audio_path} is too short to extract ID.")
     return audio_path.parts[-3]
 
 
